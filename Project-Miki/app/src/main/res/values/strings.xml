@@ -60,12 +60,13 @@
     <string name="svc">SVC</string>
     <string name="guest">Guest</string>
 
+    <string name="edit_bill">Edit Bill</string>
     <string name="create_bill">Create Bill</string>
     <string name="description">Description</string>
     <string name="amount">Amount</string>
     <string name="remove">Remove</string>
     <string name="add_item">Add Item</string>
-    <string name="item_price_include_gst_svc">Item price include GST and SVC</string>
+    <string name="item_price_include_gst_svc">GST/SVC included in item price</string>
 
     <!-- non literal representation -->
     <string name="symbol_currency">$</string>

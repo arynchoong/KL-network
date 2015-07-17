@@ -427,27 +427,8 @@ public class Bill {
                 mSubTotal = sumOfItems;
             }
 
-            // GST
-            int percent = 0;
-            if (!isZero(mGST))
-                percent = calculatePercent(mGST, mSubTotal);
-            else if (mGSTpercent != 0)
-                percent = mGSTpercent;
-
-            if ((percent >= fMinGSTpercent) && (percent <= fMaxGSTpercent)) {
-                if ((mGSTpercent < (percent-1)) || (mGSTpercent > (percent+1))) // allow for margin of error from rounding
-                    mGSTpercent = percent;
-                else if (isZero(mGST)) {
-                    mGST = calculatePercentageAmount(mSubTotal, percent);
-                }
-            }
-            else if (percent != 0) {
-                // Could not resolve error in one of the values, clear
-                mGST = BigDecimal.ZERO;
-                mGSTpercent = 0;
-            }
-
             // SVC
+            int percent = 0;
             percent = 0;
             if (!isZero(mSVC))
                 percent = calculatePercent(mSVC, mSubTotal);
@@ -465,6 +446,26 @@ public class Bill {
                 // Could not resolve error in one of the values, clear
                 mSVC = BigDecimal.ZERO;
                 mSVCpercent = 0;
+            }
+
+            // GST (GST is applicable to SVC as well)
+            percent = 0;
+            if (!isZero(mGST))
+                percent = calculatePercent(mGST, mSubTotal.add(mSVC));
+            else if (mGSTpercent != 0)
+                percent = mGSTpercent;
+
+            if ((percent >= fMinGSTpercent) && (percent <= fMaxGSTpercent)) {
+                if ((mGSTpercent < (percent-1)) || (mGSTpercent > (percent+1))) // allow for margin of error from rounding
+                    mGSTpercent = percent;
+                else if (isZero(mGST)) {
+                    mGST = calculatePercentageAmount(mSubTotal.add(mSVC), percent);
+                }
+            }
+            else if (percent != 0) {
+                // Could not resolve error in one of the values, clear
+                mGST = BigDecimal.ZERO;
+                mGSTpercent = 0;
             }
 
             // Sub Total
@@ -492,6 +493,12 @@ public class Bill {
                             mSVC = amount;
                             mSVCpercent = percent;
                         } else if (isZero(mGST)) {
+                            // recaculate GST to include Items price and SVC
+                            amount = mTotal.subtract(sumOfTotals).subtract(mSVC);
+                            percent = calculatePercent(amount, mTotal);
+                            if(percent > (fMaxGSTpercent))
+                                break;
+
                             Log.d("infer GST", amount.toString());
                             mGST = amount;
                             mGSTpercent = percent;
@@ -553,7 +560,7 @@ public class Bill {
         return percent.intValue();
     }
 
-    // return mSubTotal * 0.0x%
+    // return amount * 0.0x%
     private BigDecimal calculatePercentageAmount(BigDecimal amount, int percent) {
         BigDecimal percentageAmount = new BigDecimal(0.00);
 
@@ -608,7 +615,7 @@ public class Bill {
         while (itemIterator.hasNext()){
             total = total.add(itemIterator.next().getPrice());
         }
-        Log.d("calculateTotal", total.toString());
+        Log.d("sumOfItems", total.toString());
         return total;
     }
 
@@ -645,17 +652,17 @@ public class Bill {
         }
 
         if (mUseSubtotals) {
+            // Add SVC
+            if (mSVCpercent > 0) {
+                BigDecimal addPrice = calculatePercentageAmount(total, mSVCpercent);
+                total = total.add(addPrice);
+                Log.d("SVC of items", addPrice.toString());
+            }
             // Add GST
             if (mGSTpercent > 0) {
                 BigDecimal addPrice = calculatePercentageAmount(total, mGSTpercent);
                 total = total.add(addPrice);
                 Log.d("GST of total", addPrice.toString());
-            }
-            // Add SVC
-            if (mSVCpercent > 0) {
-                BigDecimal addPrice = calculatePercentageAmount(total, mSVCpercent);
-                total = total.add(addPrice);
-                Log.d("SVC of item", addPrice.toString());
             }
         }
         return total;
@@ -706,6 +713,8 @@ public class Bill {
         Item item = mListOfAllItems.get(index);
         if (item == null)
             return false;
+        if (item.getPrice().compareTo(amount) == 0)
+            return false;
 
         item.setPrice(amount);
 
@@ -716,10 +725,10 @@ public class Bill {
     private void updateTotals() {
         if (mUseSubtotals){
             mSubTotal = sumOfItems();
-            if (mGSTpercent != 0)
-                mGST = calculatePercentageAmount(mSubTotal, mGSTpercent);
             if (mSVCpercent != 0)
                 mSVC = calculatePercentageAmount(mSubTotal, mSVCpercent);
+            if (mGSTpercent != 0)
+                mGST = calculatePercentageAmount(mSubTotal.add(mSVC), mGSTpercent);
             mTotal = sumOfTotals();
         }
         else {
@@ -737,10 +746,10 @@ public class Bill {
             return false;
 
         mSubTotal = amount;
-        if (mGSTpercent != 0)
-            mGST = calculatePercentageAmount(mSubTotal, mGSTpercent);
         if (mSVCpercent != 0)
             mSVC = calculatePercentageAmount(mSubTotal, mSVCpercent);
+        if (mGSTpercent != 0)
+            mGST = calculatePercentageAmount(mSubTotal.add(mSVC), mGSTpercent);
 
         if(mUseSubtotals) {
             if(!isBillBalanced()){
@@ -748,32 +757,6 @@ public class Bill {
             }
             mTotal = sumOfTotals();
         }
-        return true;
-    }
-
-    // Return false if no changes
-    public Boolean updateGST(BigDecimal amount){
-        if (amount.compareTo(mGST) == 0)
-            return false;
-
-        mGST = amount;
-        if (!isZero(mSubTotal))
-            mGSTpercent = calculatePercent(mGST, mSubTotal);
-        if(mUseSubtotals)
-            mTotal = sumOfTotals();
-        return true;
-    }
-
-    // Return false if no changes
-    public Boolean updateGstPercent(int percent){
-        if (percent == mGSTpercent)
-            return false;
-
-        mGSTpercent = percent;
-        if (!isZero(mSubTotal))
-            mGST = calculatePercentageAmount(mSubTotal, percent);
-        if(mUseSubtotals)
-            mTotal = sumOfTotals();
         return true;
     }
 
@@ -803,6 +786,32 @@ public class Bill {
         return true;
     }
 
+    // Return false if no changes
+    public Boolean updateGST(BigDecimal amount){
+        if (amount.compareTo(mGST) == 0)
+            return false;
+
+        mGST = amount;
+        if (!isZero(mSubTotal))
+            mGSTpercent = calculatePercent(mGST, mSubTotal.add(mSVC));
+        if(mUseSubtotals)
+            mTotal = sumOfTotals();
+        return true;
+    }
+
+    // Return false if no changes
+    public Boolean updateGstPercent(int percent){
+        if (percent == mGSTpercent)
+            return false;
+
+        mGSTpercent = percent;
+        if (!isZero(mSubTotal))
+            mGST = calculatePercentageAmount(mSubTotal.add(mSVC), percent);
+        if(mUseSubtotals)
+            mTotal = sumOfTotals();
+        return true;
+    }
+
     // return false if there was no change
     public Boolean updateTotal(BigDecimal amount){
         if(amount.compareTo(mTotal) == 0)
@@ -811,18 +820,22 @@ public class Bill {
         mTotal = amount;
         if (mUseSubtotals) {
             // calculate subtotal
-            int percent = mGSTpercent + mSVCpercent;
-            if(percent != 0) {
+            int percent;
+            if(mGSTpercent != 0) {
+                percent = mGSTpercent;
                 percent = percent + 100;
-                amount = mTotal.multiply(BigDecimal.valueOf(100));
+                amount = amount.multiply(BigDecimal.valueOf(100));
                 amount = amount.divide(BigDecimal.valueOf(percent), 2, BigDecimal.ROUND_HALF_EVEN);
-                mSubTotal = amount;
-
-                if (mGSTpercent != 0)
-                    mGST = calculatePercentageAmount(mSubTotal, mGSTpercent);
-                if (mSVCpercent != 0)
-                    mSVC = calculatePercentageAmount(mSubTotal, mSVCpercent);
+                mGST = calculatePercentageAmount(amount, mGSTpercent);
             }
+            if(mSVCpercent != 0) {
+                percent = mSVCpercent;
+                percent = percent + 100;
+                amount = amount.multiply(BigDecimal.valueOf(100));
+                amount = amount.divide(BigDecimal.valueOf(percent), 2, BigDecimal.ROUND_HALF_EVEN);
+                mSVC = calculatePercentageAmount(amount, mSVCpercent);
+            }
+            mSubTotal = amount;
         }
 
         if(!isBillBalanced()){
@@ -832,8 +845,12 @@ public class Bill {
     }
 
     public void deleteItem(int index) {
-        mListOfAllItems.remove(index);
-        updateTotals();
+        if(index < mListOfAllItems.size()) {
+            mListOfAllItems.remove(index);
+            updateTotals();
+        }
+        else
+            Log.d("deleteItem out of bounds", Integer.toString(index));
     }
 
     // ******************* END EDIT FRAGMENT OPERATIONS ****************

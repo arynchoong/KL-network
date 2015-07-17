@@ -168,6 +168,15 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
 
     }
 
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() > 0) {
+            getFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     // Select all checkbox clicked
     public void onSelectAllChkBoxClicked(View view) {
         // Is the view now checked?
@@ -432,47 +441,6 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
         };
     }
 
-    private void updateItems() {
-        if (mItemizedLayout.findViewById(0) == null) {
-            drawItemizedLayout();
-        }
-        else {
-            // check what we have against mBill.ListOfItems
-            Iterator<Item> iterator = mBill.getListOfAllItems().iterator();
-            int numOfBillSplits = mBill.getNumOfBillSplits();
-            int id = 0;
-            String checkBoxText;
-
-            while (iterator.hasNext()) {
-                Item item = iterator.next();
-                CheckBox checkBox = (CheckBox) mItemizedLayout.findViewById(id);
-                if (checkBox != null) {
-                    // update text
-                    checkBoxText = item.getDescription() + "\t" + getString(R.string.symbol_currency) + item.getPrice().toString();
-                    checkBox.setText(checkBoxText);
-
-                    // update is selected checked
-                    if (item.getGuestIndex() == item.fNOT_SELECTED) {
-                        checkBox.setEnabled(true);
-                        checkBox.setChecked(false);
-                    } else if (item.getGuestIndex() >= numOfBillSplits) {
-                        checkBox.setEnabled(true);
-                    } else
-                        checkBox.setEnabled(false);
-                }
-                else {
-                    checkBox = new CheckBox(this);
-                    checkBox.setId(id);
-                    checkBoxText = item.getDescription() + "\t" + getString(R.string.symbol_currency) + item.getPrice().toString();
-                    checkBox.setText(checkBoxText);
-                    checkBox.setOnClickListener(onItemCheckBoxClick(checkBox));
-                    mItemizedLayout.addView(checkBox);
-                }
-                id++;
-            }
-        }
-    }
-
     private void updateTotals(){
         if (mBill == null)
             return;
@@ -593,7 +561,7 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
         EditFragment fragment = new EditFragment();
 
         fragmentTransaction.replace(android.R.id.content, fragment);
-        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.addToBackStack(getString(R.string.edit));
         fragmentTransaction.commit();
     }
 
@@ -612,5 +580,54 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
         updateTotals();
     }
 
+    private void updateItems() {
+        if (mItemizedLayout.findViewById(0) == null) {
+            drawItemizedLayout();
+        }
+        else {
+            // check what we have against mBill.ListOfItems
+            Iterator<Item> iterator = mBill.getListOfAllItems().iterator();
+            int numOfBillSplits = mBill.getNumOfBillSplits();
+            int id = 0;
+            String checkBoxText;
+
+            while (iterator.hasNext()) {
+                Item item = iterator.next();
+                CheckBox checkBox = (CheckBox) mItemizedLayout.findViewById(id);
+                if (checkBox != null) {
+                    // update text
+                    checkBoxText = item.getDescription() + "\t" + getString(R.string.symbol_currency) + item.getPrice().toString();
+                    checkBox.setText(checkBoxText);
+
+                    // update is selected checked
+                    if (item.getGuestIndex() == item.fNOT_SELECTED) {
+                        checkBox.setEnabled(true);
+                        checkBox.setChecked(false);
+                    } else if (item.getGuestIndex() >= numOfBillSplits) {
+                        checkBox.setEnabled(true);
+                    } else
+                        checkBox.setEnabled(false);
+                }
+                else {
+                    // added new item
+                    checkBox = new CheckBox(this);
+                    checkBox.setId(id);
+                    checkBoxText = item.getDescription() + "\t" + getString(R.string.symbol_currency) + item.getPrice().toString();
+                    checkBox.setText(checkBoxText);
+                    checkBox.setOnClickListener(onItemCheckBoxClick(checkBox));
+                    mItemizedLayout.addView(checkBox);
+                }
+                id++;
+            }
+
+            // update local variable
+            mNumOfItems = mBill.getListOfAllItems().size();
+
+            // check to reomve items that have been deleted.
+            while (mItemizedLayout.getChildCount() > mNumOfItems+1) {
+                mItemizedLayout.removeViewAt(mItemizedLayout.getChildCount()-1);
+            }
+        }
+    }
     // ********************** END EDIT FRAGMENT CALLBACKS ******************
 }

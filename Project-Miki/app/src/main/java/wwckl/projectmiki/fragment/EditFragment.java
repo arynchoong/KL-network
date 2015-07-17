@@ -8,18 +8,21 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 import java.math.BigDecimal;
 
@@ -159,11 +162,20 @@ public class EditFragment extends Fragment {
 
     private void setOnFocusChangeListener(EditText editText){
 
-        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        editText.setOnFocusChangeListener(new EditText.OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
+                if (!hasFocus) setValueOfEditText(((EditText) v).getText().toString(), v.getId());
+            }
+        });
+
+        // also set onEditorActionListener
+        editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
                     setValueOfEditText(((EditText) v).getText().toString(), v.getId());
                 }
+                return false;
             }
         });
     }
@@ -278,6 +290,7 @@ public class EditFragment extends Fragment {
         int numOfItems = mBill.getListOfAllItems().size();
         if (mLayoutEditItems.getChildCount() == (numOfItems + 1))
             return;
+        Log.d("updateItems", Integer.toString(numOfItems));
 
         Item item = mBill.getListOfAllItems().get(numOfItems-1);
         addItemRow(item, numOfItems-1);
@@ -292,7 +305,7 @@ public class EditFragment extends Fragment {
         mTotal.setText(mBill.getTotal().toString());
     }
 
-    // User clicked next button
+    // User clicked add new item button
     public void addNewItem() {
         mBill.addItem();
         // populate new item in mEditItemLayout
@@ -302,6 +315,7 @@ public class EditFragment extends Fragment {
     }
 
     public void deleteItem(int itemIndex) {
+        Log.d ("deleteItem", Integer.toString(itemIndex));
         // delete item at location itemIndex
         mBill.deleteItem(itemIndex);
         mLayoutEditItems.removeViewAt(itemIndex + 1);
