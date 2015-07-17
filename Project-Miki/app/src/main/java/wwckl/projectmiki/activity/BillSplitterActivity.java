@@ -1,5 +1,7 @@
 package wwckl.projectmiki.activity;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 
 import wwckl.projectmiki.R;
+import wwckl.projectmiki.fragment.EditFragment;
 import wwckl.projectmiki.fragment.SummaryFragment;
 import wwckl.projectmiki.models.Bill;
 import wwckl.projectmiki.models.BillSplit;
@@ -56,11 +59,15 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
     private Spinner mShareSpinner;
     ArrayAdapter<String> mShareAdapter;
     private SummaryFragment mSummaryFragment;
+    private FragmentManager mFragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bill_splitter);
+
+        // set fragment manager
+        mFragmentManager = getFragmentManager();
 
         // Get the various layout objects
         mSelectAllCheckBox = (CheckBox)findViewById(R.id.cbSelectAll);
@@ -71,7 +78,7 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
         mTotalTextView = (TextView)findViewById(R.id.tvTotal);
         mSplitTypeTextView = (TextView)findViewById(R.id.tvSplitType);
         mSummaryTextView = (TextView)findViewById(R.id.tvSummary);
-        mSummaryFragment = (SummaryFragment) getFragmentManager().findFragmentById(R.id.summaryFragment);
+        mSummaryFragment = (SummaryFragment) mFragmentManager.findFragmentById(R.id.summaryFragment);
         mButtonNext = (Button)findViewById(R.id.button_next);
         mButtonDone = (Button)findViewById(R.id.button_done);
         mTotalsLayout = (RelativeLayout) findViewById(R.id.layoutTotals);
@@ -91,8 +98,13 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
         mShareSpinner.setAdapter(mShareAdapter);
 
         // Initialise Bill contents
-        if (Receipt.getRecognizedText().isEmpty())
-            Toast.makeText(this, getString(R.string.could_not_read_bill), Toast.LENGTH_SHORT).show();
+        if (Receipt.getRecognizedText().isEmpty()) {
+            // assume new bill
+            mBill = new Bill("1 Item 1.00");
+            // no associated image
+            Receipt.setReceiptBitmap(null);
+            startEditFragment();
+        }
         else {
             mBill = new Bill(Receipt.getRecognizedText());
             drawItemizedLayout();
@@ -127,6 +139,7 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
                 Intent myWebLink = new Intent(android.content.Intent.ACTION_VIEW);
                 myWebLink.setData(Uri.parse("https://github.com/WomenWhoCode/KL-network/wiki/Project-Miki-Help-File"));
                 startActivity(myWebLink);
+                return true;
             case R.id.dutch:
                 swapSplitType(BillSplit.BillSplitType.DUTCH_TYPE);
                 return true;
@@ -135,6 +148,9 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
                 return true;
             case R.id.share:
                 swapSplitType(BillSplit.BillSplitType.SHARE_TYPE);
+                return true;
+            case R.id.action_edit:
+                startEditFragment();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -416,6 +432,47 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
         };
     }
 
+    private void updateItems() {
+        if (mItemizedLayout.findViewById(0) == null) {
+            drawItemizedLayout();
+        }
+        else {
+            // check what we have against mBill.ListOfItems
+            Iterator<Item> iterator = mBill.getListOfAllItems().iterator();
+            int numOfBillSplits = mBill.getNumOfBillSplits();
+            int id = 0;
+            String checkBoxText;
+
+            while (iterator.hasNext()) {
+                Item item = iterator.next();
+                CheckBox checkBox = (CheckBox) mItemizedLayout.findViewById(id);
+                if (checkBox != null) {
+                    // update text
+                    checkBoxText = item.getDescription() + "\t" + getString(R.string.symbol_currency) + item.getPrice().toString();
+                    checkBox.setText(checkBoxText);
+
+                    // update is selected checked
+                    if (item.getGuestIndex() == item.fNOT_SELECTED) {
+                        checkBox.setEnabled(true);
+                        checkBox.setChecked(false);
+                    } else if (item.getGuestIndex() >= numOfBillSplits) {
+                        checkBox.setEnabled(true);
+                    } else
+                        checkBox.setEnabled(false);
+                }
+                else {
+                    checkBox = new CheckBox(this);
+                    checkBox.setId(id);
+                    checkBoxText = item.getDescription() + "\t" + getString(R.string.symbol_currency) + item.getPrice().toString();
+                    checkBox.setText(checkBoxText);
+                    checkBox.setOnClickListener(onItemCheckBoxClick(checkBox));
+                    mItemizedLayout.addView(checkBox);
+                }
+                id++;
+            }
+        }
+    }
+
     private void updateTotals(){
         if (mBill == null)
             return;
@@ -529,4 +586,31 @@ public class BillSplitterActivity extends AppCompatActivity implements AdapterVi
                 return getString(R.string.unknown_type);
         }
     }
+
+    // ************************ EDIT FRAGMENT CALLBACKS ********************
+    private void startEditFragment() {
+        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+        EditFragment fragment = new EditFragment();
+
+        fragmentTransaction.replace(android.R.id.content, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public Bill getActivityBill() {
+        return mBill;
+    }
+
+    public void setActivityBill(Bill bill) {
+        mBill = bill;
+    }
+
+    // This should only ever be called by dynamically added fragments
+    public void fragmentSuicide() {
+        mFragmentManager.popBackStack();
+        updateItems();
+        updateTotals();
+    }
+
+    // ********************** END EDIT FRAGMENT CALLBACKS ******************
 }

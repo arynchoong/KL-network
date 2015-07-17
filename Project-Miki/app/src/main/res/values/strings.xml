@@ -14,8 +14,8 @@
     <string name="show_welcome">Show this screen next time.</string>
 
     <string name="take_a_photo_receipt">Take a photo of receipt</string>
-    <string name="take_multiple_photo_receipt">Take multiple photo of receipt</string>
     <string name="select_image_from_gallery">Select an image from Gallery</string>
+    <string name="manually_create_bill">Manually create bill</string>
 
     <string name="split_bill">Split Bill:</string>
     <string name="receipt">Receipt</string>
@@ -26,6 +26,7 @@
     <string name="camera">Camera</string>
     <string name="batch">Batch</string>
     <string name="gallery">Gallery</string>
+    <string name="edit">Edit</string>
     <string name="pref_auto_focus">Auto focus</string>
     <string name="pref_summ_auto_focus">Auto focus ON</string>
     <string name="pref_input_method">Default receipt mode</string>
@@ -59,11 +60,19 @@
     <string name="svc">SVC</string>
     <string name="guest">Guest</string>
 
+    <string name="create_bill">Create Bill</string>
+    <string name="description">Description</string>
+    <string name="amount">Amount</string>
+    <string name="remove">Remove</string>
+    <string name="add_item">Add Item</string>
+    <string name="item_price_include_gst_svc">Item price include GST and SVC</string>
+
     <!-- non literal representation -->
     <string name="symbol_currency">$</string>
-    
+    <string name="symbol_percent">%</string>
+
     <!--- toast messages -->
-    <string name="could_not_read_bill">Could not read bill!</string>
     <string name="bill_not_balanced">Bill not balanced!\nPlease check totals.</string>
     <string name="unknown_type">UNKNOWN TYPE</string>
+
 </resources>

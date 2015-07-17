@@ -13,10 +13,15 @@
         android:icon="@drawable/ic_camera_alt_white_24dp"
         android:title="@string/camera"
         android:onClick="onOptionsItemSelected"
-        app:showAsAction="ifRoom|withText"/>
+        app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_gallery"
         android:icon="@drawable/ic_collections_white_24dp"
         android:title="@string/gallery"
         android:onClick="onOptionsItemSelected"
-        app:showAsAction="ifRoom|withText"/>
+        app:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_edit"
+        android:icon="@drawable/ic_edit_white_24dp"
+        android:title="@string/edit"
+        android:onClick="onOptionsItemSelected"
+        app:showAsAction="ifRoom"/>
 </menu>

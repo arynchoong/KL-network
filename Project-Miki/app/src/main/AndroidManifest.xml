@@ -46,6 +46,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <fragment
+            android:name=".fragment.EditFragment"
+            android:label="@string/create_bill"
+            android:theme="@style/BillSplitterTheme">
+        </fragment>
     </application>
 
 </manifest>

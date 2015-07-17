@@ -74,6 +74,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 Intent myWebLink = new Intent(android.content.Intent.ACTION_VIEW);
                 myWebLink.setData(Uri.parse("https://github.com/WomenWhoCode/KL-network/wiki/Project-Miki-Help-File"));
                 startActivity(myWebLink);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -88,13 +89,13 @@ public class WelcomeActivity extends AppCompatActivity {
 
         // return the selected input Method to Main activity
         switch (view.getId()) {
-            case R.id.btnBatch1:
-                inputMethod = getString(R.string.batch);
+            case R.id.btnEdit:
+                inputMethod = getString(R.string.edit);
                 break;
-            case R.id.btnCamera1:
+            case R.id.btnCamera:
                 inputMethod = getString(R.string.camera);
                 break;
-            case R.id.btnGallery1:
+            case R.id.btnGallery:
                 inputMethod = getString(R.string.gallery);
                 break;
         }

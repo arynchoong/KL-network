@@ -178,11 +178,15 @@ public class MainActivity extends AppCompatActivity {
                 Intent myWebLink = new Intent(android.content.Intent.ACTION_VIEW);
                 myWebLink.setData(Uri.parse("https://github.com/WomenWhoCode/KL-network/wiki/Project-Miki-Help-File"));
                 startActivity(myWebLink);
+                return true;
             case R.id.action_gallery:
                 startGallery();
                 return true;
             case R.id.action_camera:
                 startCamera();
+                return true;
+            case R.id.action_edit:
+                startEdit();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -311,6 +315,9 @@ public class MainActivity extends AppCompatActivity {
         else if (mInputMethod.equalsIgnoreCase(getString(R.string.camera))) {
             startCamera();
         }
+        else if (mInputMethod.equalsIgnoreCase(getString(R.string.edit))) {
+            startEdit();
+        }
         else {
             Log.d("getReceiptImage", "NOT gallery or camera.");
         }
@@ -345,6 +352,14 @@ public class MainActivity extends AppCompatActivity {
         Receipt.setReceiptBitmap(setFilter(mReceiptPicture));
         Intent intent = new Intent(this, LoadingActivity.class);
         startActivity(intent);
+    }
+
+    // Start Edit Fragment on BillSplitterActivity
+    private void startEdit() {
+        // Make sure recognized text is empty
+        Receipt.setRecognizedText("");
+        Intent intentEdit = new Intent(this, BillSplitterActivity.class);
+        startActivity(intentEdit);
     }
 
     /*----------- FUNCTIONS FOR IMAGE MANIPULATION: -------------*/
@@ -441,12 +456,12 @@ public class MainActivity extends AppCompatActivity {
         //threshold to change to white or black
         threshold = factor * progress;
         if (progress < (maxProgress/2)){
-            absLtGray = threshold / 2;
-            absDkGray = absBlack - absLtGray;
+            absLtGray = threshold / 3 * 2;
+            absDkGray = threshold + (threshold - absLtGray);
         }
         else {
-            absLtGray = (threshold - absWhite) / 2;
-            absDkGray = threshold + ((absBlack - threshold) / 2);
+            absDkGray = threshold + ((absBlack - threshold) / 3);
+            absLtGray = threshold - (absDkGray - threshold);
         }
 
         // get pixel array from source
