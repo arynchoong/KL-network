@@ -725,10 +725,17 @@ public class Bill {
     private void updateTotals() {
         if (mUseSubtotals){
             mSubTotal = sumOfItems();
+
             if (mSVCpercent != 0)
                 mSVC = calculatePercentageAmount(mSubTotal, mSVCpercent);
+            else if (!isZero(mSVC))
+                mSVCpercent = calculatePercent(mSVC, mSubTotal);
+
             if (mGSTpercent != 0)
                 mGST = calculatePercentageAmount(mSubTotal.add(mSVC), mGSTpercent);
+            else if (!isZero(mGST))
+                mGSTpercent = calculatePercent(mGST, mSubTotal.add(mSVC));
+
             mTotal = sumOfTotals();
         }
         else {
@@ -748,8 +755,13 @@ public class Bill {
         mSubTotal = amount;
         if (mSVCpercent != 0)
             mSVC = calculatePercentageAmount(mSubTotal, mSVCpercent);
+        else if (!isZero(mSVC))
+            mSVCpercent = calculatePercent(mSVC, mSubTotal);
+
         if (mGSTpercent != 0)
             mGST = calculatePercentageAmount(mSubTotal.add(mSVC), mGSTpercent);
+        else if (!isZero(mGST))
+            mGSTpercent = calculatePercent(mGST, mSubTotal.add(mSVC));
 
         if(mUseSubtotals) {
             if(!isBillBalanced()){
