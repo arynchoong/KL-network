@@ -21,7 +21,7 @@
         app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_edit"
         android:icon="@drawable/ic_edit_white_24dp"
-        android:title="@string/edit"
+        android:title="@string/edit_bill"
         android:onClick="onOptionsItemSelected"
         app:showAsAction="ifRoom"/>
 </menu>

@@ -17,12 +17,12 @@
         android:id="@+id/scrollImage"
         android:layout_weight="10"
         android:fadeScrollbars="false"
-        android:layout_gravity="center_horizontal">
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/imgvReceipt"
-            android:visibility="gone"
             android:adjustViewBounds="true"
             android:contentDescription="@string/receipt" />
     </ScrollView>
@@ -32,63 +32,69 @@
         android:id="@+id/scrollItemized"
         android:layout_weight="10"
         android:fadeScrollbars="false">
-        <TableLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:stretchColumns="0,1"
-            android:shrinkColumns="0,2"
-            android:id="@+id/layoutEditItems">
-            <TableRow
+            <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/trAddItem">
-                <TextView
-                    android:layout_width="wrap_content"
+                android:stretchColumns="0,1"
+                android:shrinkColumns="0"
+                android:id="@+id/layoutEditItems">
+                <TableRow
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/description"
-                    android:id="@+id/tvItemDesc" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/amount"
-                    android:id="@+id/tvItemAmt" />
-            </TableRow>
+                    android:id="@+id/trAddItem">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="@string/description"
+                        android:id="@+id/tvItemDesc" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="@string/amount"
+                        android:id="@+id/tvItemAmt" />
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/imageButton"
+                        android:src="@drawable/ic_add_black_18dp"
+                        android:contentDescription="@string/add_item"
+                        android:visibility="invisible" />
+                </TableRow>
 
-        </TableLayout>
+            </TableLayout>
     </ScrollView>
 
-    <LinearLayout
-        android:orientation="horizontal"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="fill_horizontal">
+        android:layout_weight="1">
 
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:text="@string/item_price_include_gst_svc"
             android:id="@+id/cbUseSubtotals"
             android:onClick="onClickUseSubTotalsCheckbox" />
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:id="@+id/btnAddItem"
             android:src="@drawable/ic_add_black_18dp"
             android:contentDescription="@string/add_item" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="2"
-        android:stretchColumns="0,3,4,5"
-        android:shrinkColumns="1,2"
+        android:stretchColumns="3,5"
         android:id="@+id/layoutEditTotals">
 
         <TableRow

@@ -20,6 +20,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -53,6 +54,7 @@ public class EditFragment extends Fragment {
     private CheckBox mUseSubtotalsCheckBox;
     private ImageButton mAddItemButton;
     private ImageView mReceiptImageView;
+    private ScrollView mReceiptScrollView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,6 +70,7 @@ public class EditFragment extends Fragment {
 
         // get views
         mReceiptImageView = (ImageView) mView.findViewById(R.id.imgvReceipt);
+        mReceiptScrollView = (ScrollView) mView.findViewById(R.id.scrollImage);
         // get edit fields
         mLayoutEditItems = (TableLayout) mView.findViewById(R.id.layoutEditItems);
         mLayoutEditTotals = (TableLayout) mView.findViewById(R.id.layoutEditTotals);
@@ -109,10 +112,13 @@ public class EditFragment extends Fragment {
         // add Image if present
         if (Receipt.getReceiptBitmap() != null) {
             mReceiptImageView.setImageBitmap(Receipt.getReceiptBitmap());
-            mReceiptImageView.setVisibility(View.VISIBLE);
+            mReceiptScrollView.setVisibility(View.VISIBLE);
+            Log.d("Receipt bitmap", "not null");
         }
-        else
-            mReceiptImageView.setVisibility(View.GONE);
+        else {
+            mReceiptScrollView.setVisibility(View.GONE);
+            Log.d("Receipt bitmap", "null");
+        }
         return mView;
     }
 
@@ -183,8 +189,9 @@ public class EditFragment extends Fragment {
     public void setValueOfEditText(String text, int viewId)
     {
         Log.d("onFocusChange", viewId + ":" + text );
-        if(text == null)
+        if(text.isEmpty()) {
             text = "0";
+        }
 
         switch (viewId) {
             case R.id.etSubTotal:

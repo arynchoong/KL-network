@@ -850,7 +850,7 @@ public class Bill {
             updateTotals();
         }
         else
-            Log.d("deleteItem out of bounds", Integer.toString(index));
+            Log.d("deleteItem", "out of bounds: " + Integer.toString(index));
     }
 
     // ******************* END EDIT FRAGMENT OPERATIONS ****************
